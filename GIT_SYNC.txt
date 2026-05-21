@@ -22,14 +22,14 @@ Mac ↔ Windows Git 동기화 (EEE429 Final)
   git commit -m "Initial: SW notebooks, HLS starter, artifacts"
 
   git branch -M main
-  git remote add origin https://github.com/<YOUR_ID>/eee429-mnist-final.git
+  git remote add origin https://github.com/Marshall-Choi/TPDIR.git
   git push -u origin main
 
 --------------------------------------------------------------------------------
 3. Windows — 최초 1회
 --------------------------------------------------------------------------------
-  git clone https://github.com/<YOUR_ID>/eee429-mnist-final.git
-  cd eee429-mnist-final
+  git clone https://github.com/Marshall-Choi/TPDIR.git
+  cd TPDIR
 
   # HLS symlink (weights.h, images.h)
   cd hls/fixed16
