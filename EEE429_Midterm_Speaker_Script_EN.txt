@@ -1,0 +1,57 @@
+EEE429 Final Project — Mid-Term Presentation
+Full speaker script (English). Slide numbers match EEE429_Midterm_Presentation.pptx order.
+
+---
+
+Slide 1 — Title
+Good morning everyone. I am here to give a mid-term progress update on our EEE429 final project: MNIST CNN acceleration on the Pynq-Z2. This presentation focuses on the software chain—quantization-aware training and the hardware artifacts we produce—aligned with our consolidated notebook workflow.
+
+---
+
+Slide 2 — Objectives
+Our goals follow the course brief. We must keep the specified CNN topology mathematically equivalent, achieve at least ninety-three percent inference accuracy, and support the hardware team with fixed-point-friendly weights and test data. Quantization uses a sixteen-bit, seven-integer-bit fixed-point style with QAT, which the course explicitly allows. On the board, the driver must stick to NumPy and PYNQ only, so all heavy lifting stays in our offline training and export scripts.
+
+---
+
+Slide 3 — Architecture
+The network is a three-stage convolutional front end plus pooling and a fully connected classifier. Starting from one by twenty-eight by twenty-eight, we apply three three-by-three convolutions with ReLU, which step the spatial size down to twenty-two by twenty-two with thirty-two channels. A two-by-two max pool yields eleven by eleven by thirty-two, or three thousand eight hundred seventy-two features, which feed a linear layer to ten logits. This matches the project specification exactly.
+
+---
+
+Slide 4 — Fixed-point format
+We emulate ap_fixed with sixteen total bits and seven integer bits, which leaves nine fractional bits. The dynamic range is roughly minus sixty-four to plus sixty-four, with a quantum of two to the minus nine. In PyTorch we clamp and round tensors to that grid during the forward pass. The exported C header uses the same semantics with Vivado HLS–style rounding and saturation so software and RTL share one numerical contract.
+
+---
+
+Slide 5 — QAT
+Quantized convolution and linear layers quantize weights and biases every forward step. Gradients use a straight-through estimator through the quantizer, which stabilizes training. The critical engineering detail is that activation quantization must be inserted in the same order as the hardware pipeline—whether quantization sits before or after ReLU must match RTL; our notebook fixes one ordering and we verify it jointly with the FPGA team.
+
+---
+
+Slide 6 — Training setup
+We train with PyTorch and torchvision, on a workstation GPU or on Colab. We use the Adam optimizer, batch size two fifty-six, learning rate one mill, and about five epochs in the baseline log. MNIST uses the usual ToTensor and zero-point-five normalization, which must be mirrored at inference on the board. The model class is named QUANTIZED_MNISTCNN for clarity, but the parameter keys match a standard CNN checkpoint layout.
+
+---
+
+Slide 7 — Accuracy
+Quantized training still reaches the high ninety-eight percent range on the MNIST test set, comfortably above the ninety-three percent requirement. Evaluating on the combined train-plus-test split can show around ninety-nine point one percent depending on the exact checkpoint. We will cite the number that corresponds to the bitstream we ship. The margin above ninety-three percent absorbs minor discrepancies from integer rounding in hardware.
+
+---
+
+Slide 8 — Artifacts
+We export a weights header containing ap_fixed arrays and preprocessor defines for each tensor shape. We can also dump NumPy tensors for co-simulation and an images header for quick bring-up. A helper class walks the PyTorch state dict, applies the same rounding as QAT, and writes one cohesive header file. The export cell picks the latest QUANTIZED checkpoint by modification time and writes a timestamped weights file so we never confuse old and new builds.
+
+---
+
+Slide 9 — Team roles
+Software owns the model, QAT, exports, golden references, and host-side checks. Hardware owns HLS, DMA, clocks, and the bitstream. We co-own interface decisions: weight layout such as OIHW, bias packing, and the exact activation quantization schedule. Mid-term is where we freeze those choices to avoid costly rework.
+
+---
+
+Slide 10 — Risks and next steps
+Remaining risks include any mismatch between QAT insertion points and RTL, and comparing FPGA accuracy against the wrong PyTorch baseline. Runtime reporting must include only preprocessing, the hardware kernel loop, and prediction accumulation, per the brief. Before the final submission we still owe full HLS reports, the exported IP zip, bitstream and HWH, and the Jupyter notebook for the board.
+
+---
+
+Slide 11 — Closing
+Thank you. I would be glad to answer questions on the quantization schedule, export format, or how we plan to validate new weights against the FPGA pipeline.

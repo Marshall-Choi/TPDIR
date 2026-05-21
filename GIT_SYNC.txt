@@ -1,0 +1,91 @@
+================================================================================
+Mac ↔ Windows Git 동기화 (EEE429 Final)
+================================================================================
+
+한 번만 GitHub private repo 만들고, Mac에서 push / Windows에서 pull 하면 됨.
+
+--------------------------------------------------------------------------------
+1. GitHub repo 만들기 (웹)
+--------------------------------------------------------------------------------
+  https://github.com/new
+  - Repository name: eee429-mnist-final (예)
+  - Private 권장
+  - README / .gitignore 추가 안 함 (로컬에 이미 있음)
+
+--------------------------------------------------------------------------------
+2. Mac — 최초 1회
+--------------------------------------------------------------------------------
+  cd Final/
+  git init
+  git add .
+  git status          # .venv, data, 대용량 npy 제외됐는지 확인
+  git commit -m "Initial: SW notebooks, HLS starter, artifacts"
+
+  git branch -M main
+  git remote add origin https://github.com/<YOUR_ID>/eee429-mnist-final.git
+  git push -u origin main
+
+--------------------------------------------------------------------------------
+3. Windows — 최초 1회
+--------------------------------------------------------------------------------
+  git clone https://github.com/<YOUR_ID>/eee429-mnist-final.git
+  cd eee429-mnist-final
+
+  # HLS symlink (weights.h, images.h)
+  cd hls/fixed16
+  bash setup_links.sh     # Git Bash
+  # 또는 PowerShell에서 artifacts/hls/... 파일을 직접 복사
+
+  # SW export 안 올렸으면 Mac에서 export 후 push:
+  #   python hls_export.py shared
+  #   python hls_export.py fixed16
+  #   python hls_export.py bnn
+
+--------------------------------------------------------------------------------
+4. 일상 workflow
+--------------------------------------------------------------------------------
+  [Mac에서 SW 작업 후]
+    git add .
+    git commit -m "update weights / notebook"
+    git push
+
+  [Windows에서 HW 작업 전]
+    git pull
+
+  [Windows에서 HLS/bitstream 작업 후]
+    git add hls/ ...
+    git commit -m "HLS synthesis update"
+    git push
+
+  [Mac에서]
+    git pull
+
+--------------------------------------------------------------------------------
+5. Git에 포함되는 것 (HW 팀용)
+--------------------------------------------------------------------------------
+  EEE426_FINAL.ipynb
+  hls_export.py, quant_models.py
+  hls/                    C++ HLS starter + run_vitis_hls.tcl
+  artifacts/hls/fixed16/weights.h
+  artifacts/hls/bnn/weights.h
+  artifacts/hls/shared/images.h
+  README_HANDOFF.txt, EEE429_FINAL_PROJECT_BRIEF.txt
+
+--------------------------------------------------------------------------------
+6. Git에 안 올리는 것 (.gitignore)
+--------------------------------------------------------------------------------
+  .venv/                  각 PC에서 pip install
+  data/MNIST/             자동 다운로드
+  MNIST_DATASET_*.npy     210MB (GitHub 100MB 초과)
+  Vitis HLS 빌드 폴더     mnist_fixed16/
+
+  checkpoint(.pth)도 올리려면 .gitignore에서 milestones/ 주석 해제
+
+--------------------------------------------------------------------------------
+7. 충돌 줄이기
+--------------------------------------------------------------------------------
+  - Mac: SW (노트북, export, hls_export.py)
+  - Windows: HW (hls/fixed16/*.cpp 수정, synthesis 리포트)
+  - weights.h 바꿨으면 commit 메시지에 variant 명시
+
+================================================================================

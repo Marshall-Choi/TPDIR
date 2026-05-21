@@ -1,0 +1,8 @@
+# 로컬(Mac/PC)에서 학습·양자화·노트북 실행용
+# 보드 드라이버는 과제 규칙에 따라 numpy/pynq만 사용 — 이 파일은 PC 환경용입니다.
+
+torch>=2.2,<2.8
+torchvision>=0.17,<0.23
+numpy>=1.24
+jupyter>=1.0.0
+ipykernel>=6.0.0

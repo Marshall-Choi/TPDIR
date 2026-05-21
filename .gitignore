@@ -1,0 +1,34 @@
+# ── Python / IDE ──
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
+Thumbs.db
+
+# ── 대용량 / 재생성 가능 (GitHub 100MB 제한) ──
+data/
+artifacts/lab6/
+artifacts/cnn_qat_npy/
+artifacts/hls/shared/MNIST_DATASET_*.npy
+
+# ── 루트 clutter (구버전 export) ──
+/images.h
+/weights_*.h
+bnn_export_*/
+reorganize_notebook.py
+
+# ── HLS symlink (clone 후 setup_links.sh 실행) ──
+hls/fixed16/weights.h
+hls/fixed16/images.h
+
+# ── Vitis HLS 생성물 (Windows에서 재생성) ──
+hls/fixed16/mnist_fixed16/
+hls/fixed16/tb_csim
+hls/fixed16/*.o
+
+# ── 선택: checkpoint까지 Git으로 옮길 때 milestones 주석 해제 ──
+# milestones/
+# milestones_bnn/
+# milestones_fixed8/
+# milestones_qat/
