@@ -1,0 +1,26 @@
+Vitis HLS — fixed8 (ap_fixed<8,4>) 파일 목록
+================================================
+
+Design Sources:
+  1. top_kernel.cpp
+  2. cnn_forward.cpp
+  3. cnn_forward.h
+  4. ap_fixed.h
+  5. weights.h          ← artifacts/hls/fixed8/weights.h (setup_links.sh)
+
+Test Bench:
+  6. tb_csim.cpp
+  7. images.h           ← artifacts/hls/shared/images.h (setup_links.sh)
+
+Also required (include path):
+  ../common/cnn_dims.h
+  ../common/ap_fixed_compat.h   (CSim local stub; Vitis uses ap_fixed)
+
+Top function: mnist_cnn
+Part: xc7z020clg400-1
+Clock: 10 ns
+
+CLI:
+  cd hls/fixed8
+  bash setup_links.sh
+  vitis_hls -f run_vitis_hls.tcl

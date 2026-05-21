@@ -79,7 +79,15 @@ def _nested_format(obj, fmt, indent=0):
 
 
 def _load_state_dict(ckpt_path: Path) -> dict:
-    return torch.load(ckpt_path, map_location="cpu", weights_only=False)["model"]
+    ckpt = torch.load(ckpt_path, map_location="cpu", weights_only=False)
+    if isinstance(ckpt, dict):
+        if "model" in ckpt:
+            return ckpt["model"]
+        if "model_state_dict" in ckpt:
+            return ckpt["model_state_dict"]
+        if "state_dict" in ckpt:
+            return ckpt["state_dict"]
+    raise KeyError(f"No model weights in {ckpt_path.name} (keys: {list(ckpt.keys()) if isinstance(ckpt, dict) else type(ckpt)})")
 
 
 def _tensor_to_int_grid(t: torch.Tensor, fixed_w: int, fixed_i: int) -> np.ndarray:

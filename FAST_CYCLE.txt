@@ -1,0 +1,54 @@
+================================================================================
+EEE429 — 한 사이클 빠르게 (교수님: 욕심 X, end-to-end 먼저)
+================================================================================
+
+목표: fixed8 spec graph로 Train → Export → CSim → (EE) Synth → Bitstream → Pynq
+
+--------------------------------------------------------------------------------
+SW (Mac/PC) — 오늘
+--------------------------------------------------------------------------------
+
+  cd Final/
+  source .venv/bin/activate
+  python train_fixed8.py              # fixed16 warm-start, 5 epoch, export
+  cd hls/fixed8 && bash run_csim.sh   # ≥90% on 280 images
+
+  재학습만:  python train_fixed8.py --epochs 10
+  처음부터:  python train_fixed8.py --scratch
+
+산출물:
+  milestones_fixed8/QUANTIZED8_MNISTCNN-*.pth
+  artifacts/hls/fixed8/weights.h
+  artifacts/hls/shared/images.h
+
+--------------------------------------------------------------------------------
+EE (Windows + Vitis HLS) — CSim 통과 후
+--------------------------------------------------------------------------------
+
+  cd hls/fixed8
+  bash setup_links.sh
+  vitis_hls -f run_vitis_hls.tcl
+
+  Top function: mnist_cnn
+  Part: xc7z020clg400-1 (Pynq-Z2)
+
+  ⚠ BNN 말고 fixed8/fixed16. monolithic starter — synth 오래 걸릴 수 있음.
+  일단 csynth 리포트만 내고 Vivado bitstream 연결.
+
+--------------------------------------------------------------------------------
+Pynq (마지막)
+--------------------------------------------------------------------------------
+
+  .bit + .hwh + driver .ipynb (numpy/pynq only)
+  측정 구간: preprocessing / kernel loop / accumulate (brief §3)
+
+--------------------------------------------------------------------------------
+왜 fixed8?
+--------------------------------------------------------------------------------
+
+  - spec graph (Conv→ReLU) ✅
+  - BNN보다 HLS 단순 ✅
+  - fixed16보다 HW 가벼움 (속도 여지) ✅
+  - 93% floor: warm-start QAT로 보통 충분
+
+================================================================================
