@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../common/cnn_dims.h"
+#include "cnn_dims.h"
 
 #include "weights.h"
 

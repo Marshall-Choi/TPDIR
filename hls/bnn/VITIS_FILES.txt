@@ -1,0 +1,23 @@
+Vitis HLS — BNN 파일 목록 (hls/bnn/ 한 폴더에 전부)
+=====================================================
+
+Design Sources (Add Files):
+  1. top_kernel.cpp
+  2. cnn_forward.cpp
+  3. cnn_forward.h
+  4. cnn_dims.h
+  5. weights.h          ← artifacts/hls/bnn/weights.h 복사 또는 setup_links.sh
+
+Test Bench:
+  6. tb_csim.cpp
+
+Test Bench가 읽는 헤더 (Design Sources에도 추가하거나 같은 폴더에 두기):
+  7. images.h           ← artifacts/hls/shared/images.h 복사 또는 setup_links.sh
+
+Top function: mnist_bnn
+
+Part: xc7z020clg400-1
+Clock: 10 ns
+
+※ ../common/ 경로 필요 없음 — cnn_dims.h는 bnn/ 안에 포함됨
+※ Downloads에 파일만 흩뿌리지 말고 hls/bnn/ 폴더 통째로 쓰거나 git clone 권장
