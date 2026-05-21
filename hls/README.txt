@@ -1,49 +1,32 @@
 ================================================================================
-HLS Starter — MNIST CNN (fixed16)
+HLS Starter — MNIST CNN
 ================================================================================
 
-SW export (weights.h, images.h) 를 HLS C++ 추론 코드에 연결하는 스타터 프로젝트.
+  hls/fixed16/   ap_fixed<16,7> QAT  → top: mnist_cnn
+  hls/bnn/       ±1 conv + BN + FC   → top: mnist_bnn   ← 프로젝트 메인
 
-디렉토리
---------
-  hls/common/           공통 차원·ap_fixed stub·quantize
-  hls/fixed16/          fixed16 추론 + testbench + Vitis TCL
+공통 준비
+---------
+  python hls_export.py shared
+  python hls_export.py bnn          # 또는 fixed16
 
-준비 (최초 1회)
----------------
-  1. SW 쪽 export (프로젝트 루트):
-       python hls_export.py shared
-       python hls_export.py fixed16
+BNN (메인)
+----------
+  cd hls/bnn && bash setup_links.sh
+  bash run_csim.sh                  # Mac C-sim (~98%)
+  vitis_hls -f run_vitis_hls.tcl    # Windows: csim + synthesis
 
-  2. symlink:
-       cd hls/fixed16 && bash setup_links.sh
-
-Mac / PC — C simulation (Vivado 없이)
---------------------------------------
-  cd hls/fixed16
+Fixed16 (비교/연습)
+-------------------
+  cd hls/fixed16 && bash setup_links.sh
   bash run_csim.sh
-
-  → images.h 280장으로 정확도 출력 (90% 이상이면 PASS)
-
-Vitis HLS (합성·IP export)
---------------------------
-  cd hls/fixed16
   vitis_hls -f run_vitis_hls.tcl
 
-  Pynq-Z2 part: xc7z020clg400-1 (run_vitis_hls.tcl 에 설정됨)
+Part: xc7z020clg400-1 (Pynq-Z2)
 
-파일 설명
----------
-  cnn_forward.cpp   QAT 그래프: Input→Q→Conv→Q→ReLU ×3 → Pool → Q → FC
-  top_kernel.cpp    HLS top `mnist_cnn()` — AXI interface
-  tb_csim.cpp       images.h testbench
-  weights.h         symlink → artifacts/hls/fixed16/weights.h
-  images.h          symlink → artifacts/hls/shared/images.h
-
-다음 단계 (최적화)
-------------------
-  - conv/FC loop tiling, DATAFLOW 파이프라인
-  - fixed8 / BNN variant 별도 subdir 추가
-  - cosim_design 로 RTL 검증
+BNN 그래프
+----------
+  Normalize input [-1,1]
+  → sign(±1) → bin_conv → BN(float) → sign → … → MaxPool → FC(float)
 
 ================================================================================

@@ -21,11 +21,16 @@ reorganize_notebook.py
 # ── HLS symlink (clone 후 setup_links.sh 실행) ──
 hls/fixed16/weights.h
 hls/fixed16/images.h
+hls/bnn/weights.h
+hls/bnn/images.h
 
-# ── Vitis HLS 생성물 (Windows에서 재생성) ──
+# ── Vitis HLS 생성물 ──
 hls/fixed16/mnist_fixed16/
 hls/fixed16/tb_csim
+hls/bnn/mnist_bnn/
+hls/bnn/tb_csim
 hls/fixed16/*.o
+hls/bnn/*.o
 
 # ── 선택: checkpoint까지 Git으로 옮길 때 milestones 주석 해제 ──
 # milestones/
