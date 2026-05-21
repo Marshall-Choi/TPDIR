@@ -1,7 +1,5 @@
 #include "cnn_forward.h"
 
-#include "../common/ap_fixed_compat.h"
-
 #include <cstdio>
 
 #include "images.h"

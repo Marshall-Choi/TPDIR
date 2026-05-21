@@ -1,8 +1,6 @@
 #pragma once
 
-#include "../common/cnn_dims.h"
-#include "../common/ap_fixed_compat.h"
-
+#include "cnn_dims.h"
 #include "weights.h"
 
 // Forward pass: Input→Q→Conv→Q→ReLU (×3) → MaxPool → Q → FC  (ap_fixed<8,4>)

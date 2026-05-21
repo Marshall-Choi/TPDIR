@@ -1,6 +1,6 @@
 #include "cnn_forward.h"
 
-#include "../common/fixed_ops.h"
+#include "fixed_ops.h"
 
 #include <algorithm>
 

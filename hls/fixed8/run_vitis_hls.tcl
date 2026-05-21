@@ -10,9 +10,9 @@ set proj_name mnist_fixed8
 open_project -reset $proj_name
 set_top mnist_cnn
 
-add_files top_kernel.cpp -cflags "-I. -I../common -DUSE_VITIS_HLS"
-add_files cnn_forward.cpp -cflags "-I. -I../common -DUSE_VITIS_HLS"
-add_files -tb tb_csim.cpp -cflags "-I. -I../common -DUSE_VITIS_HLS -DCSIM_LOCAL"
+add_files top_kernel.cpp -cflags "-I. -DUSE_VITIS_HLS"
+add_files cnn_forward.cpp -cflags "-I. -DUSE_VITIS_HLS"
+add_files -tb tb_csim.cpp -cflags "-I. -DUSE_VITIS_HLS -DCSIM_LOCAL"
 
 open_solution -reset sol1 -flow_target vivado
 set_part {xc7z020clg400-1}

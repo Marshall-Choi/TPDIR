@@ -6,7 +6,7 @@ cd "$DIR"
 bash setup_links.sh
 
 CXX="${CXX:-g++}"
-FLAGS=(-std=c++17 -O2 -DCSIM_LOCAL -I. -I../common)
+FLAGS=(-std=c++17 -O2 -DCSIM_LOCAL -I.)
 
 echo "=== build csim ==="
 "$CXX" "${FLAGS[@]}" cnn_forward.cpp tb_csim.cpp -o tb_csim
