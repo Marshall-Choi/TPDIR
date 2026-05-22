@@ -16,21 +16,26 @@ static fixed_t q_fixed(fixed_t x) {
     return fixed_quantize<FW, FI>(x);
 }
 
+// Synth note: PIPELINE only on innermost MAC loop + REDUCTION on acc.
+// Pipelining oc/oh/ow (old code) makes HLS explode schedule size → overnight hang.
 static void conv2d(
     const fixed_t in[], int in_c, int in_h, int in_w,
     const fixed_t weight[], int out_c, int k,
     const fixed_t bias[],
     fixed_t out[], int out_h, int out_w) {
+#pragma HLS INLINE off
+
     const int out_hw = out_h * out_w;
 
     for (int oc = 0; oc < out_c; ++oc) {
         for (int oh = 0; oh < out_h; ++oh) {
             for (int ow = 0; ow < out_w; ++ow) {
-#pragma HLS PIPELINE II = 1
                 fixed_t acc = bias[oc];
                 for (int ic = 0; ic < in_c; ++ic) {
                     for (int kh = 0; kh < k; ++kh) {
                         for (int kw = 0; kw < k; ++kw) {
+#pragma HLS PIPELINE II = 1
+#pragma HLS REDUCTION variable = acc
                             const int ih = oh + kh;
                             const int iw = ow + kw;
                             const int i_idx = ic * (in_h * in_w) + ih * in_w + iw;
@@ -86,10 +91,13 @@ static void linear(
     const fixed_t in[], int in_features,
     const fixed_t weight[], const fixed_t bias[],
     fixed_t out[], int out_features) {
+#pragma HLS INLINE off
+
     for (int o = 0; o < out_features; ++o) {
-#pragma HLS PIPELINE II = 1
         fixed_t acc = bias[o];
         for (int i = 0; i < in_features; ++i) {
+#pragma HLS PIPELINE II = 1
+#pragma HLS REDUCTION variable = acc
             acc += in[i] * weight[o * in_features + i];
         }
         out[o] = acc;
@@ -100,19 +108,20 @@ void mnist_cnn_forward(
     const fixed_t input[CNN_IN_C][CNN_IN_H][CNN_IN_W],
     fixed_t output[CNN_NUM_CLASS]) {
 
-#pragma HLS DATAFLOW disable
-
     static fixed_t buf_a[CNN_C1_OUT * CNN_H1 * CNN_W1];
     static fixed_t buf_b[CNN_C2_OUT * CNN_H2 * CNN_W2];
     static fixed_t buf_c[CNN_C3_OUT * CNN_H3 * CNN_W3];
     static fixed_t buf_p[CNN_C3_OUT * CNN_POOL_H * CNN_POOL_W];
     static fixed_t flat[CNN_FLAT];
+    static fixed_t in_q[CNN_IN_C * CNN_IN_H * CNN_IN_W];
 
 #pragma HLS BIND_STORAGE variable = buf_a type = RAM_2P impl = BRAM
 #pragma HLS BIND_STORAGE variable = buf_b type = RAM_2P impl = BRAM
 #pragma HLS BIND_STORAGE variable = buf_c type = RAM_2P impl = BRAM
+#pragma HLS BIND_STORAGE variable = buf_p type = RAM_2P impl = BRAM
+#pragma HLS BIND_STORAGE variable = flat type = RAM_2P impl = BRAM
+#pragma HLS BIND_STORAGE variable = in_q type = RAM_2P impl = BRAM
 
-    static fixed_t in_q[CNN_IN_C * CNN_IN_H * CNN_IN_W];
     for (int h = 0; h < CNN_IN_H; ++h) {
         for (int w = 0; w < CNN_IN_W; ++w) {
 #pragma HLS PIPELINE II = 1

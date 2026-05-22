@@ -21,4 +21,6 @@ create_clock -period 10 -name default
 csim_design
 csynth_design
 
+# Synth-only (skip csim): vitis_hls -f run_csynth_only.tcl
+
 exit

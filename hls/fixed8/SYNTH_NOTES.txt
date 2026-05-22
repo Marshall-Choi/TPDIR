@@ -1,0 +1,74 @@
+================================================================================
+fixed8 합성이 밤새 안 끝나는 이유 & 대처
+================================================================================
+
+## 8비트 탓이 아님
+
+CSim 97.86% 나온 코드 ≠ Synth-friendly 코드.
+BNN/fixed16도 같은 monolithic 구조면 똑같이 터짐.
+
+## 이전 코드가 죽인 것
+
+1. conv/FC 바깥 루프에 `#pragma HLS PIPELINE II=1`
+   → 안쪽 MAC 수백 개짜리 루프를 한 사이클에 넣으려다
+     스케줄러가 폭발 (instruction count 27k → 268k 같은 현상)
+
+2. FC: 바깥 10번 루프 pipeline + 안쪽 3872 MAC
+   → reduction 패턴인데 pragma 위치가 반대
+
+3. CNN 전체가 함수 하나 (DATAFLOW 없음)
+   → 레이어 3 + FC + weights.h 8000줄 ROM → 컴파일/스케줄 무거움
+
+4. "안 됨" = 실패가 아니라 **아직 도는 중**일 수도 있음
+   (RAM 16GB 노트북이면 Vitis HLS OOM/swap으로 멈춘 것처럼 보임)
+
+## 지금 고친 것 (cb14e20 이후 pull)
+
+- conv/FC: PIPELINE + REDUCTION → **가장 안쪽 MAC 루프**로 이동
+- conv/linear: `#pragma HLS INLINE off`
+- BRAM bind 추가
+- `run_csynth_only.tcl` — csim 스킵, clock 20ns, unroll 완화
+
+## EE가 할 것 (순서)
+
+```bat
+git pull
+cd hls\fixed8
+bash setup_links.sh
+
+REM 1) csynth만 (csim은 Mac에서 이미 함)
+vitis_hls -f run_csynth_only.tcl
+
+REM 2) 로그 확인
+type mnist_fixed8\solution1\syn\report\csynth.rpt
+```
+
+GUI 쓰면:
+- Top: mnist_cnn
+- **C Synthesis만** Run (CSim 다시 돌릴 필요 없음)
+- Clock **20 ns** 로 시작 (10 ns는 나중에)
+
+## 여전히 2시간+ 걸리면
+
+| 확인 | |
+|------|--|
+| 작업관리자 RAM | 90%+ / 디스크 100% → 다른 프로그램 전부 끄기 |
+| 로그 | `mnist_fixed8/hls.log` 마지막 줄이 뭐라고 하는지 |
+| 실패 | `ERROR` / `CRITICAL` 검색 |
+| 디스크 | C: 여유 10GB+ |
+
+## 교수님 "한 사이클" 현실 타협
+
+1. **csynth.rpt만** 제출 zip1에 넣기 (bitstream은 그 다음)
+2. clock 20ns → 자원/타이밍 맞으면 Vivado
+3. 속도 튜닝(10ns, unroll)은 **bitstream 나온 다음**
+
+## CSim vs Synth
+
+| | CSim | Synth |
+|--|------|-------|
+| 목적 | 수학 맞나 | RTL/자원/타이밍 |
+| 시간 | 1~5초 | 30분~3시간 (첫 bring-up) |
+| pragma | 관대 | 까다로움 |
+
+================================================================================
